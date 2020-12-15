@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tk.mybatis.sample.mapper.UserMapper">
+
+    <select id="findUserById" resultType="sysUser">
+        select *
+        from sys_user
+        where id = #{id}
+    </select>
+
+    <select id="findAll" resultType="sysUser">
+        select id,
+               user_name     userName,
+               user_password userPassword,
+               user_email    userEmail,
+               user_info     userInfo,
+               head_img      headImg,
+               create_time   createTime
+        from sys_user
+    </select>
+
+    <!-- 多条件查询时，使用 if  -->
+    <select id="findByUsernameAndEmail" resultType="sysUser">
+        select id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        where 1=1
+        <if test="userName!=null and userName!=''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="userEmail!=null and userEmail!=''">
+            and user_email=#{userEmail}
+        </if>
+    </select>
+
+    <!-- 在insert 中使用 if 标签 -->
+    <insert id="saveUser">
+        insert into sys_user (
+        user_name,
+        user_password,
+        <if test="userEmail!=null and userEmail !=''">
+            user_email,
+        </if>
+        user_info,
+        head_img,
+        create_time)
+        values (
+        #{userName},
+        #{userPassword},
+        <if test="userEmail!=null and userEmail !=''">
+            #{userEmail},
+        </if>
+        #{userInfo},
+        #{headImg},
+        #{createTime}
+        )
+    </insert>
+
+    <!-- 更新操作中使用 if 动态SQL标签 -->
+    <update id="updateByIdSelective">
+        update sys_user
+        set
+        <if test="userName!=null and userName!=''">
+            user_name = #{userName},
+        </if>
+        <if test="userPassword!=null and userPassword!=''">
+            user_password = #{userPassword},
+        </if>
+        <if test="userEmail!=null and userEmail!=''">
+            user_email = #{userEmail},
+        </if>
+        <if test="userInfo!=null and userInfo!=''">
+            user_info = #{userInfo},
+        </if>
+        <if test="headImg!=null">
+            head_img = #{headImg,jdbcType=BLOB},
+        </if>
+        <if test="createTime!=null">
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+        </if>
+        id = #{id}
+        WHERE id = #{id}
+    </update>
+
+    <!-- choose when 标签: 只要匹配一个查询条件 -->
+    <select id="findByIdOrUserName" resultType="sysUser">
+        select id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        where 1=1
+        <choose>
+            <!-- 最多只会选择一个条件拼接 -->
+            <when test="id!=null">
+                and id = #{id}
+            </when>
+            <!-- 数据库要避免多个重名的记录，否则返回多条记录会报错，因为接口方法声明只返回一个 SysUser -->
+            <when test="userName!=null and userName!=''">
+                and user_name = #{userName}
+            </when>
+            <otherwise>
+                <!-- 这个条件是为了避免当 id=null && userName=null 时，返回所有记录 -->
+                and 1 = 2
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 使用 where 标签 -->
+    <select id="findByUser" resultType="sysUser">
+        select id,
+        user_name userName,
+        user_password userPassword,
+        user_email userEmail,
+        user_info userInfo,
+        head_img headImg,
+        create_time createTime
+        from sys_user
+        <where>
+            <!-- 使用 where 标签的好处就是: 当没有条件拼接时，SQL不会出现 where 子句，避免了SQL语法错误 -->
+            <if test="userName!=null and userName!=''">
+                and user_name like concat('%',#{userName},'%')
+            </if>
+            <if test="userEmail!=null and userEmail!=''">
+                and user_email like concat('%',#{userEmail},'%')
+            </if>
+        </where>
+
+    </select>
+
+    <!-- set 标签 -->
+    <update id="updateById">
+        update sys_user
+        <set>
+            <if test="userName!=null and userName!=''">
+                user_name = #{userName},
+            </if>
+            <if test="userPassword!=null and userPassword!=''">
+                user_password = #{userPassword},
+            </if>
+            <if test="userEmail!=null and userEmail!=''">
+                user_email = #{userEmail},
+            </if>
+            <if test="userInfo!=null and userInfo!=''">
+                user_info = #{userInfo},
+            </if>
+            <if test="headImg!=null">
+                head_img = #{headImg,jdbcType=BLOB},
+            </if>
+            <if test="createTime!=null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <!-- 为了避免前面的参数都为 null 时，SQL语法出错  -->
+            id=#{id}
+        </set>
+        where id = #{id}
+    </update>
+
+    <!-- trim标签：可以用来代替 where标签和 set标签 -->
+    <!-- 配合 if 使用 -->
+    <select id="findUser" resultType="sysUser">
+        select * from sys_user
+        <trim prefix="where" prefixOverrides="AND |OR ">
+            <if test="id!=null">
+                AND id = #{id}
+            </if>
+            <if test="userName!=null and userName!=''">
+                AND user_name = #{userName}
+            </if>
+        </trim>
+    </select>
+
+    <!-- 使用 trim 标签代替 set 标签 -->
+    <update id="updateUserById">
+        update sys_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userName!=null and userName!=''">
+                user_name = #{userName},
+            </if>
+            <if test="userPassword!=null and userPassword!=''">
+                user_password = #{userPassword},
+            </if>
+            <if test="userEmail!=null and userEmail!=''">
+                user_email = #{userEmail},
+            </if>
+            <if test="userInfo!=null and userInfo!=''">
+                user_info = #{userInfo},
+            </if>
+            <if test="headImg!=null">
+                head_img = #{headImg,jdbcType=BLOB},
+            </if>
+            <if test="createTime!=null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            id = #{id}
+        </trim>
+        where id = #{id}
+    </update>
+
+    <!-- foreach 标签 遍历 List集合 -->
+    <select id="findByIdsList" resultType="sysUser">
+        select * from sys_user
+        where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id" index="i">
+            #{id}
+        </foreach>
+    </select>
+
+    <sql id="sysUserRow">
+
+    </sql>
+
+    <!-- 批量插入,返回数据库自增的主键 -->
+    <!-- TODO 要实现批量插入返回自增主键，就不能使用 @Param 映射参数名了，只能使用默认的参数名: list，或者显示映射参数名为 list -->
+    <!-- TODO 相关参考：https://blog.csdn.net/u014336799/article/details/52023887  -->
+    <insert id="saveUserList" useGeneratedKeys="true" keyProperty="id">
+
+        insert into sys_user(user_name,user_password,user_email,user_info,head_img,create_time)
+        values
+        <foreach collection="list" item="user" separator=",">
+            (#{user.userName},#{user.userPassword},#{user.userEmail},#{user.userInfo},#{user.headImg,jdbcType=BLOB},#{user.createTime,jdbcType=TIMESTAMP})
+        </foreach>
+    </insert>
+
+    <!-- foreach 动态更新 -->
+    <!-- key 为数据库的列名 -->
+    <update id="updateByMap">
+        update sys_user
+        set
+        <foreach collection="_parameter" item="val" index="key" separator=",">
+            ${key} = #{val}
+        </foreach>
+        <!-- 注意：这里的 #{id} 取的是接口方法参数map里面key为id对应的值，这跟foreach循环中的参数不是一回事 -->
+        where id = #{id}
+    </update>
+
+    <!--
+    注意：1）接口中的方法名称，一定要在 XxxMapper.xml 中存在对应唯一id的statement标签
+        2）但是 XxxMapper.xml 唯一id的statement标签，不要求在接口中存在对应名称的方法声明
+        3）xml中标签的id属性一定要是唯一的。(不然解析会报错)
+     -->
+</mapper>

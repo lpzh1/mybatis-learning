@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="tk.mybatis.sample.mapper.UserMapper">
+
+    <select id="findUserById" resultType="sysUser">
+        select * from sys_user where id = #{id}
+    </select>
+
+    <select id="findAll" resultType="sysUser">
+        select id,
+               user_name userName,
+               user_password userPassword,
+               user_email userEmail,
+               user_info userInfo,
+               head_img headImg,
+               create_time createTime
+        from sys_user
+    </select>
+    
+    
+    
+    <insert id="saveUser">
+        insert into sys_user( user_name , user_password , user_email , user_info , head_img , create_time)
+        values (#{userName},#{userPassword},#{userEmail},#{userInfo},#{headImg},,#{createTime})
+    </insert>
+    
+    
+    
+    
+    
+    <sql id="sysUserRow">
+
+    </sql>
+</mapper>

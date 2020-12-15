@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="ehcache.xsd"
+         updateCheck="false" monitoring="autodetect" dynamicConfig="true">
+
+
+    <diskStore path="D:\book\mybatis-learning\mybatis-ch07-cache-ehcache\cache"/>
+
+    <!--
+     注意：mybatis-ehcache 版本为 1.2.1 ,第一这个版本，ehcache的jar包导不进来报错
+     -->
+
+    <defaultCache maxEntriesLocalHeap="0" eternal="false" timeToIdleSeconds="1200" timeToLiveSeconds="1200">
+        <terracotta/>
+    </defaultCache>
+
+
+    <cache name="tk.mybatis.sample.mapper.RoleMapper"
+           maxEntriesLocalHeap="10000"
+           maxEntriesLocalDisk="1000"
+           eternal="false"
+           diskSpoolBufferSizeMB="20"
+           timeToIdleSeconds="300"
+           timeToLiveSeconds="600"
+           memoryStoreEvictionPolicy="LFU"
+           transactionalMode="off">
+        <persistence strategy="localTempSwap"/>
+    </cache>
+
+</ehcache>

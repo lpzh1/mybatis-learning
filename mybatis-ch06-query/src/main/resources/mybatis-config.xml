@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--引入外部属性文件-->
+    <properties resource="jdbc.properties"></properties>
+
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+        <!-- 支持驼峰命名自动映射 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- 懒加载控制参数：aggressiveLazyLoading
+            默认值: true
+            当该参数为true时，对任意延迟属性的调用会使带有延迟加载属性的对象完全加载。
+            反之，每种属性按需加载。
+            举例: 本例中，调用sysUser的任意setter方法会导致本该延迟加载的 role属性对象直接加载。
+
+            需要注意：mybatis 在 3.4.1之前该属性默认值是true，3.4.1 之后默认是是false。
+            使用前，先检查自己用的mybatis版本。
+         -->
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!--
+        局部的 fetchType 属性和 lazyLoadingEnabled 的功能一样，都是开启懒加载
+        并且 局部的 fetchType 属性会覆盖掉全局的 lazyLoadingEnabled属性
+        <setting name="lazyLoadingEnabled" value="true"/>
+         -->
+
+    </settings>
+    
+
+    <typeAliases>
+        <package name="tk.mybatis.sample.model"  />
+    </typeAliases>
+
+    <typeHandlers>
+        <!-- 自定义枚举处理器: tk.mybatis.sample.type.EnabledTypeHandle -->
+        <!-- mybatis提供的实现: org.apache.ibatis.type.EnumOrdinalTypeHandler -->
+        <!-- 配置枚举类型处理器 -->
+        <typeHandler javaType="tk.mybatis.sample.type.Enabled" handler="tk.mybatis.sample.type.EnabledTypeHandle"  />
+    </typeHandlers>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <!-- 1. 单独加载 XxxMapper.xml -->
+        <!--
+        <mapper resource="mapper/UserMapper.xml"></mapper>
+        -->
+        <!-- 2. 使用包扫描的方式 -->
+        <!--
+        这种方式需要，XxxMapper.xml 文件和 XxxMapper.java 类路径相同，并且名称相同
+        -->
+        <package name="tk.mybatis.sample.mapper"/>
+    </mappers>
+</configuration>
